@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Epic Phrase Generator</title>
+  <style>
+      :root {
+          --bg1: #0b1220;
+          --bg2: #111a33;
+          --card: rgba(255, 255, 255, 0.06);
+          --card-border: rgba(255, 255, 255, 0.12);
+          --text: rgba(255, 255, 255, 0.92);
+          --muted: rgba(255, 255, 255, 0.68);
+          --accent1: #7c3aed;
+          --accent2: #22c55e;
+          --shadow: 0 18px 60px rgba(0, 0, 0, 0.55);
+          --radius: 18px;
+          --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji",
+          "Segoe UI Emoji";
+      }
+
+      * {
+          box-sizing: border-box;
+      }
+
+      body {
+          margin: 0;
+          min-height: 100svh;
+          font-family: var(--font);
+          color: var(--text);
+          background:
+                  radial-gradient(1200px 700px at 20% 20%, rgba(124, 58, 237, 0.28), transparent 60%),
+                  radial-gradient(900px 600px at 80% 30%, rgba(34, 197, 94, 0.18), transparent 55%),
+                  linear-gradient(160deg, var(--bg1), var(--bg2));
+          display: grid;
+          place-items: center;
+          padding: 24px;
+      }
+
+      .wrap {
+          width: min(980px, 100%);
+          display: grid;
+          gap: 18px;
+          align-items: center;
+      }
+
+      .card {
+          background: var(--card);
+          border: 1px solid var(--card-border);
+          border-radius: var(--radius);
+          box-shadow: var(--shadow);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          padding: clamp(18px, 3vw, 28px);
+      }
+
+      header.card {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 12px;
+      }
+
+      .title {
+          display: grid;
+          gap: 6px;
+      }
+
+      h1 {
+          margin: 0;
+          font-size: clamp(18px, 2.2vw, 22px);
+          letter-spacing: 0.2px;
+      }
+
+      .sub {
+          margin: 0;
+          color: var(--muted);
+          font-size: 14px;
+          line-height: 1.4;
+      }
+
+      .badge {
+          padding: 8px 12px;
+          border-radius: 999px;
+          border: 1px solid rgba(255, 255, 255, 0.14);
+          color: rgba(255, 255, 255, 0.8);
+          font-size: 12px;
+          letter-spacing: 0.35px;
+          user-select: none;
+          background: rgba(255, 255, 255, 0.04);
+      }
+
+      main.card {
+          display: grid;
+          gap: 18px;
+      }
+
+      .phrase {
+          display: grid;
+          gap: 10px;
+          padding: 18px;
+          border-radius: calc(var(--radius) - 6px);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          background: rgba(0, 0, 0, 0.18);
+      }
+
+      .phrase .label {
+          color: var(--muted);
+          font-size: 12px;
+          letter-spacing: 0.35px;
+          text-transform: uppercase;
+      }
+
+      #output {
+              margin: 0;
+              font-size: clamp(34px, 5vw, 56px);
+              line-height: 1.05;
+              letter-spacing: 0.3px;
+              font-weight: 800;
+              word-break: normal;
+              white-space: nowrap;
+              text-wrap: nowrap;
+              background: linear-gradient(90deg, rgba(124, 58, 237, 1), rgba(34, 197, 94, 1));
+              -webkit-background-clip: text;
+              background-clip: text;
+              color: transparent;
+      }
+
+      .controls {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 12px;
+          align-items: center;
+          justify-content: space-between;
+      }
+
+      .btn {
+          appearance: none;
+          border: 0;
+          cursor: pointer;
+          border-radius: 14px;
+          padding: 14px 16px;
+          min-width: 220px;
+          font-weight: 700;
+          font-size: 14px;
+          color: rgba(255, 255, 255, 0.92);
+          background: linear-gradient(135deg, rgba(124, 58, 237, 1), rgba(34, 197, 94, 1));
+          box-shadow: 0 12px 30px rgba(124, 58, 237, 0.22);
+          transition: transform 120ms ease, box-shadow 180ms ease, filter 180ms ease;
+      }
+
+      .btn:hover {
+          transform: translateY(-1px);
+          filter: brightness(1.04);
+          box-shadow: 0 16px 38px rgba(124, 58, 237, 0.26);
+      }
+
+      .btn:active {
+          transform: translateY(0px) scale(0.99);
+      }
+
+      .btn:focus-visible {
+          outline: 3px solid rgba(124, 58, 237, 0.5);
+          outline-offset: 3px;
+      }
+
+      .hint {
+          margin: 0;
+          color: var(--muted);
+          font-size: 13px;
+          line-height: 1.35;
+      }
+
+      /* Small, tasteful animation on phrase changes */
+      .pop {
+          animation: pop 220ms ease-out;
+      }
+
+      @keyframes pop {
+          0% {
+              transform: translateY(2px);
+              opacity: 0.25;
+              filter: blur(1px);
+          }
+          100% {
+              transform: translateY(0);
+              opacity: 1;
+              filter: blur(0);
+          }
+      }
+
+      footer {
+          text-align: center;
+          color: rgba(255, 255, 255, 0.55);
+          font-size: 12px;
+      }
+  </style>
+</head>
+
+<body>
+<div class="wrap" role="application" aria-label="Epic phrase generator">
+  <header class="card">
+    <div class="title">
+      <h1>Military Operation Name Generator</h1>
+      <p class="sub">
+        Click the button to generate an awesome new name for your upcoming military operation.
+      </p>
+    </div>
+  </header>
+
+  <main class="card">
+    <section class="phrase" aria-live="polite" aria-atomic="true">
+      <div class="label">Your phrase</div>
+      <p id="output">Press Generate</p>
+    </section>
+
+    <div class="controls">
+      <button class="btn" id="generateBtn" type="button">Generate Phrase</button>
+      <p class="hint">
+        Tip: press <strong>Enter</strong> after focusing the button to generate again.
+      </p>
+    </div>
+  </main>
+
+  <footer id="footerText">Built with plain HTML/CSS/JS (no frameworks).</footer>
+</div>
+
+<script>
+  // Adjectives: synonyms of "epic"
+  const epicAdjectives = [
+    "legendary",
+    "monumental",
+    "mythic",
+    "heroic",
+    "grand",
+    "colossal",
+    "titanic",
+    "spectacular",
+    "momentous",
+    "majestic",
+    "stupendous",
+    "awesome",
+  ];
+
+  // Nouns: words meaning fury (rage/wrath/etc.)
+  const furyNouns = [
+    "wrath",
+    "rage",
+    "fury",
+    "ire",
+    "tempest",
+    "vengeance",
+    "outrage",
+    "ferocity",
+    "frenzy",
+    "indignation",
+    "havoc",
+    "storm",
+  ];
+
+  const output = document.getElementById("output");
+  const btn = document.getElementById("generateBtn");
+  const footer = document.getElementById("footerText");
+
+  footer.textContent = `(c)${new Date().getFullYear()} Champie`;
+
+  let lastPhrase = "";
+  let lastAdj = "";
+  let lastNoun = "";
+
+  function pickRandom(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  function toTitleCaseWord(word) {
+    // Keep hyphenated words nice: "awe-inspiring" -> "Awe-Inspiring"
+    return word
+      .split("-")
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+      .join("-");
+  }
+
+  function generatePhrase() {
+    // Never reuse either word from the previous phrase (best-effort with fallback).
+    let adj = "";
+    let noun = "";
+
+    // Try a bunch of times to find a pair that avoids BOTH last words.
+    for (let i = 0; i < 50; i++) {
+      const nextAdj = pickRandom(epicAdjectives);
+      const nextNoun = pickRandom(furyNouns);
+
+      if (nextAdj !== lastAdj && nextNoun !== lastNoun) {
+        adj = nextAdj;
+        noun = nextNoun;
+        break;
+      }
+    }
+
+    // Fallback: if we somehow didn't find a valid pair (e.g., tiny lists),
+    // at least avoid reusing each word individually when possible.
+    if (!adj) {
+      const adjPool = epicAdjectives.filter((a) => a !== lastAdj);
+      adj = pickRandom(adjPool.length ? adjPool : epicAdjectives);
+    }
+    if (!noun) {
+      const nounPool = furyNouns.filter((n) => n !== lastNoun);
+      noun = pickRandom(nounPool.length ? nounPool : furyNouns);
+    }
+
+    const phrase = `Operation ${toTitleCaseWord(adj)} ${toTitleCaseWord(noun)}`;
+
+    lastPhrase = phrase;
+    lastAdj = adj;
+    lastNoun = noun;
+
+    output.classList.remove("pop");
+    // Force reflow so the animation re-triggers reliably
+    void output.offsetWidth;
+    output.textContent = phrase;
+    output.classList.add("pop");
+  }
+
+  btn.addEventListener("click", generatePhrase);
+      window.addEventListener("resize", fitOutputToOneLine);
+
+      // Optional: generate one immediately on load for a "ready" feel
+      // generatePhrase();
+    </script>
+</body>
+</html>
