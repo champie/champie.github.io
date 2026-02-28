@@ -253,12 +253,17 @@
 
           #output {
               letter-spacing: 0.15px;
-              line-height: 1.1; /* a touch more breathing room when wrapping */
+              line-height: 1.1;
+
+              /* Prevent re-balancing from changing line breaks (and height) */
+              text-wrap: normal;
+
+              /* Reserve space for up to 3 lines so the box doesn't jump */
+              min-height: 3lh; /* equals 3 * computed line-height */
           }
       }
   </style>
 </head>
-
 <body>
 <div class="wrap" role="application" aria-label="War name generator">
   <header class="card">
