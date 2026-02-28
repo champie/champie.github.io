@@ -338,14 +338,24 @@
     // Reset to stylesheet-driven size first.
     el.style.fontSize = "";
 
+    const parentStyle = getComputedStyle(parent);
+    const padL = parseFloat(parentStyle.paddingLeft) || 0;
+    const padR = parseFloat(parentStyle.paddingRight) || 0;
+
+    // Available width inside the parent's padding box (content area)
+    const availableWidth = Math.max(0, parent.clientWidth - padL - padR);
+
     // Shrink until it fits (or hit minimum).
     const minPx = 18;
     let size = parseFloat(getComputedStyle(el).fontSize);
 
-    // If it already fits, we're done.
-    if (el.scrollWidth <= parent.clientWidth) return;
+    // Small safety buffer helps with subpixel rounding on mobile browsers.
+    const fudge = 2;
 
-    while (el.scrollWidth > parent.clientWidth && size > minPx) {
+    // If it already fits, we're done.
+    if (el.scrollWidth <= availableWidth - fudge) return;
+
+    while (el.scrollWidth > availableWidth - fudge && size > minPx) {
       size -= 1;
       el.style.fontSize = `${size}px`;
     }
