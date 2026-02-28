@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Epic Phrase Generator</title>
+  <title>War Name Generator</title>
   <style>
       :root {
           --bg1: #0b1220;
@@ -103,6 +103,7 @@
           border-radius: calc(var(--radius) - 6px);
           border: 1px solid rgba(255, 255, 255, 0.12);
           background: rgba(0, 0, 0, 0.18);
+          overflow: hidden;
       }
 
       .phrase .label {
@@ -121,6 +122,7 @@
               word-break: normal;
               white-space: nowrap;
               text-wrap: nowrap;
+              max-width: 100%;
               background: linear-gradient(90deg, rgba(124, 58, 237, 1), rgba(34, 197, 94, 1));
               -webkit-background-clip: text;
               background-clip: text;
@@ -148,6 +150,8 @@
           background: linear-gradient(135deg, rgba(124, 58, 237, 1), rgba(34, 197, 94, 1));
           box-shadow: 0 12px 30px rgba(124, 58, 237, 0.22);
           transition: transform 120ms ease, box-shadow 180ms ease, filter 180ms ease;
+          -webkit-tap-highlight-color: transparent;
+          touch-action: manipulation;
       }
 
       .btn:hover {
@@ -194,6 +198,51 @@
           text-align: center;
           color: rgba(255, 255, 255, 0.55);
           font-size: 12px;
+      }
+
+      /* Mobile polish */
+      @media (max-width: 520px) {
+          body {
+              padding: 14px;
+              place-items: stretch;
+          }
+
+          .wrap {
+              width: 100%;
+              gap: 12px;
+          }
+
+          header.card {
+              flex-direction: column;
+              align-items: flex-start;
+          }
+
+          .card {
+              padding: 16px;
+          }
+
+          .phrase {
+              padding: 14px;
+          }
+
+          .controls {
+              flex-direction: column;
+              align-items: stretch;
+          }
+
+          .btn {
+              width: 100%;
+              min-width: 0;
+              padding: 14px 16px;
+          }
+
+          .hint {
+              font-size: 12px;
+          }
+
+          #output {
+              letter-spacing: 0.15px;
+          }
       }
   </style>
 </head>
@@ -281,6 +330,27 @@
       .join("-");
   }
 
+  function fitOutputToOneLine() {
+    const el = output;
+    const parent = el.parentElement;
+    if (!parent) return;
+
+    // Reset to stylesheet-driven size first.
+    el.style.fontSize = "";
+
+    // Shrink until it fits (or hit minimum).
+    const minPx = 18;
+    let size = parseFloat(getComputedStyle(el).fontSize);
+
+    // If it already fits, we're done.
+    if (el.scrollWidth <= parent.clientWidth) return;
+
+    while (el.scrollWidth > parent.clientWidth && size > minPx) {
+      size -= 1;
+      el.style.fontSize = `${size}px`;
+    }
+  }
+
   function generatePhrase() {
     // Never reuse either word from the previous phrase (best-effort with fallback).
     let adj = "";
@@ -319,6 +389,9 @@
     // Force reflow so the animation re-triggers reliably
     void output.offsetWidth;
     output.textContent = phrase;
+
+    fitOutputToOneLine();
+
     output.classList.add("pop");
   }
 
