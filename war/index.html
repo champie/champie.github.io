@@ -132,13 +132,14 @@
       }
 
       /* Keep it single-line on larger screens only (desktop/tablet) */
-      @media (min-width: 521px) {
+      /* Remove this block to prevent truncation on long desktop names */
+      /* @media (min-width: 521px) {
           #output {
               white-space: nowrap;
               overflow-wrap: normal;
               text-wrap: nowrap;
           }
-      }
+      } */
 
       .controls {
           display: flex;
