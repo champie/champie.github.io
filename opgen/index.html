@@ -296,7 +296,6 @@
 <script>
   // Adjectives: synonyms of "epic"
   const epicAdjectives = [
-    "epic",
     "legendary",
     "monumental",
     "mythic",
@@ -325,7 +324,14 @@
     "indignation",
     "havoc",
     "storm",
-    "spite",
+  ];
+
+  // After the first 5 generated names, there's a 1-in-10 chance to use one of these instead.
+  // Put names here WITHOUT the "Operation" prefix (we add it consistently).
+  const presetOperationNames = [
+    "Forget Epstein",
+    "bUt BiDeN!!!",
+    "She'd Start A War",
   ];
 
   const output = document.getElementById("output");
@@ -338,103 +344,126 @@
   let lastAdj = "";
   let lastNoun = "";
 
+  // Counts how many names have been displayed via the button
+  let displayedCount = 0;
+
+  // Preset "deck" state (shuffled; we draw through all before repeating)
+  let presetDeck = [];
+  let lastPresetShown = "";
+
+  // NEW: after showing a preset, require at least 5 non-preset entries before another preset can appear
+  let presetCooldown = 0;
+
   function pickRandom(arr) {
     return arr[Math.floor(Math.random() * arr.length)];
   }
 
+  function shuffleCopy(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function refillPresetDeck() {
+    if (!presetOperationNames.length) {
+      presetDeck = [];
+      return;
+    }
+
+    presetDeck = shuffleCopy(presetOperationNames);
+
+    // Ensure we never show the same preset twice in a row across reshuffles.
+    if (presetDeck.length > 1 && presetDeck[0] === lastPresetShown) {
+      // Swap first with some other index (1..end)
+      const swapIndex = 1 + Math.floor(Math.random() * (presetDeck.length - 1));
+      [presetDeck[0], presetDeck[swapIndex]] = [presetDeck[swapIndex], presetDeck[0]];
+    }
+  }
+
+  function nextPresetName() {
+    if (!presetDeck.length) refillPresetDeck();
+    const name = presetDeck.shift() || "";
+    lastPresetShown = name;
+    return name;
+  }
+
+  function shouldUsePresetName() {
+    if (displayedCount < 5) return false;
+
+    // NEW: enforce cooldown
+    if (presetCooldown > 0) return false;
+
+    // 1 in 10 chance
+    return Math.floor(Math.random() * 10) === 0;
+  }
+
   function toTitleCaseWord(word) {
-    // Keep hyphenated words nice: "awe-inspiring" -> "Awe-Inspiring"
     return word
       .split("-")
       .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
       .join("-");
   }
 
-  function fitOutputToOneLine() {
-    const el = output;
-    const parent = el.parentElement;
-    if (!parent) return;
-
-    // Reset to stylesheet-driven size first.
-    el.style.fontSize = "";
-
-    const parentStyle = getComputedStyle(parent);
-    const padL = parseFloat(parentStyle.paddingLeft) || 0;
-    const padR = parseFloat(parentStyle.paddingRight) || 0;
-
-    // Available width inside the parent's padding box (content area)
-    const availableWidth = Math.max(0, parent.clientWidth - padL - padR);
-
-    // Shrink until it fits (or hit minimum).
-    const minPx = 18;
-    let size = parseFloat(getComputedStyle(el).fontSize);
-
-    // Small safety buffer helps with subpixel rounding on mobile browsers.
-    const fudge = 2;
-
-    // If it already fits, we're done.
-    if (el.scrollWidth <= availableWidth - fudge) return;
-
-    while (el.scrollWidth > availableWidth - fudge && size > minPx) {
-      size -= 1;
-      el.style.fontSize = `${size}px`;
-    }
-  }
-
   function generatePhrase() {
-    // Never reuse either word from the previous phrase (best-effort with fallback).
-    let adj = "";
-    let noun = "";
+    displayedCount += 1;
 
-    // Try a bunch of times to find a pair that avoids BOTH last words.
-    for (let i = 0; i < 50; i++) {
-      const nextAdj = pickRandom(epicAdjectives);
-      const nextNoun = pickRandom(furyNouns);
+    // NEW: tick cooldown down once per generated entry
+    if (presetCooldown > 0) presetCooldown -= 1;
 
-      if (nextAdj !== lastAdj && nextNoun !== lastNoun) {
-        adj = nextAdj;
-        noun = nextNoun;
-        break;
+    let phrase = "";
+
+    if (presetOperationNames.length && shouldUsePresetName()) {
+      const preset = nextPresetName();
+      phrase = `Operation ${preset}`;
+
+      // NEW: after a preset, block presets for the next 5 entries
+      presetCooldown = 5;
+    } else {
+      // Never reuse either word from the previous phrase (best-effort with fallback).
+      let adj = "";
+      let noun = "";
+
+      // Try a bunch of times to find a pair that avoids BOTH last words.
+      for (let i = 0; i < 50; i++) {
+        const nextAdj = pickRandom(epicAdjectives);
+        const nextNoun = pickRandom(furyNouns);
+
+        if (nextAdj !== lastAdj && nextNoun !== lastNoun) {
+          adj = nextAdj;
+          noun = nextNoun;
+          break;
+        }
       }
-    }
 
-    // Fallback: if we somehow didn't find a valid pair (e.g., tiny lists),
-    // at least avoid reusing each word individually when possible.
-    if (!adj) {
-      const adjPool = epicAdjectives.filter((a) => a !== lastAdj);
-      adj = pickRandom(adjPool.length ? adjPool : epicAdjectives);
-    }
-    if (!noun) {
-      const nounPool = furyNouns.filter((n) => n !== lastNoun);
-      noun = pickRandom(nounPool.length ? nounPool : furyNouns);
-    }
+      // Fallback: if we somehow didn't find a valid pair (e.g., tiny lists),
+      // at least avoid reusing each word individually when possible.
+      if (!adj) {
+        const adjPool = epicAdjectives.filter((a) => a !== lastAdj);
+        adj = pickRandom(adjPool.length ? adjPool : epicAdjectives);
+      }
+      if (!noun) {
+        const nounPool = furyNouns.filter((n) => n !== lastNoun);
+        noun = pickRandom(nounPool.length ? nounPool : furyNouns);
+      }
 
-    const phrase = `Operation ${toTitleCaseWord(adj)} ${toTitleCaseWord(noun)}`;
+      phrase = `Operation ${toTitleCaseWord(adj)} ${toTitleCaseWord(noun)}`;
 
-    lastPhrase = phrase;
-    lastAdj = adj;
-    lastNoun = noun;
+      lastPhrase = phrase;
+      lastAdj = adj;
+      lastNoun = noun;
+    }
 
     output.classList.remove("pop");
-    // Force reflow so the animation re-triggers reliably
     void output.offsetWidth;
-
-    // Important: clear any inline font-size left over from previous versions
     output.style.fontSize = "";
-
     output.textContent = phrase;
-
-    // IMPORTANT: do not call fitOutputToOneLine() anymore
-    // fitOutputToOneLine();
-
     output.classList.add("pop");
   }
 
   btn.addEventListener("click", generatePhrase);
-
-  // IMPORTANT: remove this too if it still exists
-  // window.addEventListener("resize", fitOutputToOneLine);
-
-    </script>
+</script>
 </body>
 </html>
