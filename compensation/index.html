@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Never Gonna Give You Up</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #111;
+            font-family: sans-serif;
+        }
+        button {
+            padding: 16px 32px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            background: #e53935;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 150ms ease;
+        }
+        button:hover {
+            background: #c62828;
+        }
+        iframe {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <button id="playBtn">Claim now</button>
+    <div id="player" style="margin-top: 24px;"></div>
+
+    <script>
+        document.getElementById('playBtn').addEventListener('click', function () {
+            this.style.display = 'none';
+            document.getElementById('player').innerHTML = `
+                <iframe
+                    width="560"
+                    height="315"
+                    src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1"
+                    title="Rick Astley - Never Gonna Give You Up"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen>
+                </iframe>`;
+        });
+    </script>
+</body>
+</html>
