@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Letterdle</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="game">
+    <header>
+      <h1>Letterdle</h1>
+      <p class="subtitle">Guess the letter in 6 tries</p>
+    </header>
+
+    <div id="board-container">
+      <div id="board">
+        <!-- 6 rows, 1 tile each — built by JS -->
+      </div>
+    </div>
+
+    <div id="message-container">
+      <p id="message"></p>
+    </div>
+
+    <div id="keyboard">
+      <!-- built by JS -->
+    </div>
+  </div>
+
+  <div id="modal-overlay" class="hidden">
+    <div id="modal">
+      <button id="modal-close">&times;</button>
+      <h2 id="modal-title"></h2>
+      <p id="modal-body"></p>
+      <button id="share-btn" class="hidden">Share 📋</button>
+    </div>
+  </div>
+
+  <script src="scripts.js"></script>
+</body>
+</html>
